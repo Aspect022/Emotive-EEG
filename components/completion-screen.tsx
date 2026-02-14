@@ -29,7 +29,7 @@ export function CompletionScreen({
   }, [])
 
   const steamChars = ["~", "~~", "~~~"]
-  const firstName = participantName.split(" ")[0] || "there"
+  const firstName = (participantName ?? "").split(" ")[0] || "there"
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-16">
