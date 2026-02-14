@@ -53,7 +53,16 @@ export default function Page() {
       activityId: ActivityType,
       score: number,
       total: number,
-      answers?: { questionId: number; selected: number; correct: number }[]
+      answers?: {
+        questionId: number
+        questionText: string
+        selected: number | null
+        correct: number
+        timeTaken: number
+        timedOut: boolean
+        difficulty: string
+        category: string
+      }[]
     ) => {
       // Save results to Supabase
       if (participant) {

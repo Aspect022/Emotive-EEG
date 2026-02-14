@@ -1,91 +1,111 @@
 export interface Question {
   id: number
   text: string
-  options: string[]
-  correctIndex: number
+  options: [string, string, string] // exactly 3 options
+  correctIndex: 0 | 1 | 2
   category: string
+  timeLimit: number // seconds: 15 (easy), 20 (medium), 30 (hard)
+  difficulty: "easy" | "medium" | "hard"
 }
 
-// Activity 1: Mental Arithmetic — 10 basic arithmetic + 10 theoretical/pattern/recall
+// ─── Activity 1: Mental Arithmetic — 20 questions, increasing difficulty ───
 export const arithmeticQuestions: Question[] = [
-  // Basic Arithmetic (1-10)
-  { id: 1, text: "What is 47 + 86?", options: ["123", "133", "143", "113"], correctIndex: 1, category: "Basic Arithmetic" },
-  { id: 2, text: "What is 215 - 78?", options: ["137", "147", "127", "157"], correctIndex: 0, category: "Basic Arithmetic" },
-  { id: 3, text: "What is 12 x 15?", options: ["170", "180", "190", "160"], correctIndex: 1, category: "Basic Arithmetic" },
-  { id: 4, text: "What is 144 / 12?", options: ["11", "13", "12", "14"], correctIndex: 2, category: "Basic Arithmetic" },
-  { id: 5, text: "What is 999 + 1?", options: ["1001", "1000", "999", "1010"], correctIndex: 1, category: "Basic Arithmetic" },
-  { id: 6, text: "What is 56 x 7?", options: ["382", "402", "392", "412"], correctIndex: 2, category: "Basic Arithmetic" },
-  { id: 7, text: "What is 1000 - 347?", options: ["653", "663", "643", "673"], correctIndex: 0, category: "Basic Arithmetic" },
-  { id: 8, text: "What is 225 / 15?", options: ["13", "14", "15", "16"], correctIndex: 2, category: "Basic Arithmetic" },
-  { id: 9, text: "What is 33 + 67 + 100?", options: ["190", "200", "210", "180"], correctIndex: 1, category: "Basic Arithmetic" },
-  { id: 10, text: "What is 18 x 18?", options: ["314", "324", "334", "304"], correctIndex: 1, category: "Basic Arithmetic" },
-  // Theoretical / Pattern / Recall (11-20)
-  { id: 11, text: "What comes next: 2, 6, 18, 54, ?", options: ["108", "162", "148", "216"], correctIndex: 1, category: "Pattern Recognition" },
-  { id: 12, text: "If 5 machines make 5 widgets in 5 minutes, how many minutes for 100 machines to make 100 widgets?", options: ["100", "20", "5", "50"], correctIndex: 2, category: "Logical Reasoning" },
-  { id: 13, text: "What is the next number: 1, 1, 2, 3, 5, 8, ?", options: ["11", "12", "13", "10"], correctIndex: 2, category: "Pattern Recognition" },
-  { id: 14, text: "A bat and a ball cost $1.10. The bat costs $1 more than the ball. How much is the ball?", options: ["$0.10", "$0.05", "$0.15", "$0.20"], correctIndex: 1, category: "Logical Reasoning" },
-  { id: 15, text: "Which number is the odd one out: 3, 5, 11, 14, 17, 23?", options: ["3", "14", "11", "23"], correctIndex: 1, category: "Pattern Recognition" },
-  { id: 16, text: "What is 15% of 200?", options: ["25", "30", "35", "20"], correctIndex: 1, category: "Applied Math" },
-  { id: 17, text: "Complete the series: 100, 81, 64, 49, ?", options: ["25", "36", "16", "42"], correctIndex: 1, category: "Pattern Recognition" },
-  { id: 18, text: "If you rearrange 'CIFAIPC', you get the name of a(n):", options: ["Country", "City", "Ocean", "Animal"], correctIndex: 2, category: "Recall" },
-  { id: 19, text: "How many degrees are in the interior angles of a triangle?", options: ["360", "180", "270", "90"], correctIndex: 1, category: "Recall" },
-  { id: 20, text: "What is the square root of 196?", options: ["12", "13", "14", "15"], correctIndex: 2, category: "Applied Math" },
+  // Easy (1-7): 15 seconds each — simple single-operation
+  { id: 1, text: "What is 8 + 5?", options: ["12", "13", "14"], correctIndex: 1, category: "Addition", timeLimit: 15, difficulty: "easy" },
+  { id: 2, text: "What is 15 - 7?", options: ["7", "8", "9"], correctIndex: 1, category: "Subtraction", timeLimit: 15, difficulty: "easy" },
+  { id: 3, text: "What is 6 x 4?", options: ["20", "24", "28"], correctIndex: 1, category: "Multiplication", timeLimit: 15, difficulty: "easy" },
+  { id: 4, text: "What is 36 / 6?", options: ["5", "6", "7"], correctIndex: 1, category: "Division", timeLimit: 15, difficulty: "easy" },
+  { id: 5, text: "What is 23 + 19?", options: ["41", "42", "43"], correctIndex: 1, category: "Addition", timeLimit: 15, difficulty: "easy" },
+  { id: 6, text: "What is 9 x 7?", options: ["56", "63", "72"], correctIndex: 1, category: "Multiplication", timeLimit: 15, difficulty: "easy" },
+  { id: 7, text: "What is 100 - 37?", options: ["63", "67", "73"], correctIndex: 0, category: "Subtraction", timeLimit: 15, difficulty: "easy" },
+
+  // Medium (8-14): 20 seconds each — two-step or larger numbers
+  { id: 8, text: "What is 47 + 86?", options: ["123", "133", "143"], correctIndex: 1, category: "Addition", timeLimit: 20, difficulty: "medium" },
+  { id: 9, text: "What is 15 x 12?", options: ["170", "180", "190"], correctIndex: 1, category: "Multiplication", timeLimit: 20, difficulty: "medium" },
+  { id: 10, text: "What is 225 / 15?", options: ["13", "15", "17"], correctIndex: 1, category: "Division", timeLimit: 20, difficulty: "medium" },
+  { id: 11, text: "What is 34 + 67 + 19?", options: ["110", "120", "130"], correctIndex: 1, category: "Multi-step", timeLimit: 20, difficulty: "medium" },
+  { id: 12, text: "What is 18 x 18?", options: ["304", "324", "344"], correctIndex: 1, category: "Multiplication", timeLimit: 20, difficulty: "medium" },
+  { id: 13, text: "What is 500 - 178?", options: ["312", "322", "332"], correctIndex: 1, category: "Subtraction", timeLimit: 20, difficulty: "medium" },
+  { id: 14, text: "What is 144 / 12?", options: ["11", "12", "13"], correctIndex: 1, category: "Division", timeLimit: 20, difficulty: "medium" },
+
+  // Hard (15-20): 30 seconds each — multi-step, fractions, percentages
+  { id: 15, text: "What is 15% of 240?", options: ["32", "36", "40"], correctIndex: 1, category: "Percentage", timeLimit: 30, difficulty: "hard" },
+  { id: 16, text: "What is 37 x 24?", options: ["868", "888", "908"], correctIndex: 1, category: "Multiplication", timeLimit: 30, difficulty: "hard" },
+  { id: 17, text: "What is 1000 - 347 + 89?", options: ["732", "742", "752"], correctIndex: 1, category: "Multi-step", timeLimit: 30, difficulty: "hard" },
+  { id: 18, text: "What is (25 x 16) / 8?", options: ["40", "50", "60"], correctIndex: 1, category: "Order of Operations", timeLimit: 30, difficulty: "hard" },
+  { id: 19, text: "What is 729 / 27?", options: ["23", "27", "31"], correctIndex: 1, category: "Division", timeLimit: 30, difficulty: "hard" },
+  { id: 20, text: "What is 56 x 43 - 1000?", options: ["1308", "1408", "1508"], correctIndex: 1, category: "Multi-step", timeLimit: 30, difficulty: "hard" },
 ]
 
-// Activity 2: Pattern Matching
+// ─── Activity 2: Pattern Matching — 20 number pattern questions, increasing difficulty ───
 export const patternQuestions: Question[] = [
-  { id: 1, text: "Which shape completes the pattern: Circle, Square, Triangle, Circle, Square, ?", options: ["Circle", "Triangle", "Square", "Pentagon"], correctIndex: 1, category: "Shape Patterns" },
-  { id: 2, text: "Find the odd one out: Apple, Banana, Carrot, Mango", options: ["Apple", "Banana", "Carrot", "Mango"], correctIndex: 2, category: "Classification" },
-  { id: 3, text: "If A=1, B=2, C=3, what is the value of CAB?", options: ["312", "6", "321", "123"], correctIndex: 1, category: "Symbolic Logic" },
-  { id: 4, text: "Which doesn't belong: 144, 169, 196, 200, 225?", options: ["144", "169", "200", "225"], correctIndex: 2, category: "Number Patterns" },
-  { id: 5, text: "Mirror image of 'b' is:", options: ["d", "p", "q", "b"], correctIndex: 0, category: "Spatial Reasoning" },
-  { id: 6, text: "Complete: AB, CD, EF, GH, ?", options: ["IJ", "HI", "JK", "GI"], correctIndex: 0, category: "Sequence Patterns" },
-  { id: 7, text: "If all Bloops are Razzies and all Razzies are Lazzies, then all Bloops are:", options: ["Razzies only", "Lazzies", "Neither", "Cannot determine"], correctIndex: 1, category: "Logical Deduction" },
-  { id: 8, text: "How many triangles in a Star of David?", options: ["6", "8", "10", "20"], correctIndex: 1, category: "Visual Counting" },
-  { id: 9, text: "Which number replaces ?: 3, 9, 27, ?, 243", options: ["54", "72", "81", "108"], correctIndex: 2, category: "Number Patterns" },
-  { id: 10, text: "Rotate the letter 'N' 180 degrees. What do you get?", options: ["Z", "N", "U", "M"], correctIndex: 1, category: "Spatial Reasoning" },
+  // Easy (1-7): 15 seconds each — simple arithmetic progressions
+  { id: 1, text: "What comes next: 2, 4, 6, 8, ?", options: ["9", "10", "12"], correctIndex: 1, category: "Arithmetic Sequence", timeLimit: 15, difficulty: "easy" },
+  { id: 2, text: "What comes next: 5, 10, 15, 20, ?", options: ["22", "25", "30"], correctIndex: 1, category: "Arithmetic Sequence", timeLimit: 15, difficulty: "easy" },
+  { id: 3, text: "What comes next: 1, 3, 5, 7, ?", options: ["8", "9", "10"], correctIndex: 1, category: "Odd Numbers", timeLimit: 15, difficulty: "easy" },
+  { id: 4, text: "What comes next: 100, 90, 80, 70, ?", options: ["50", "55", "60"], correctIndex: 2, category: "Decreasing Sequence", timeLimit: 15, difficulty: "easy" },
+  { id: 5, text: "What comes next: 3, 6, 9, 12, ?", options: ["14", "15", "16"], correctIndex: 1, category: "Multiples", timeLimit: 15, difficulty: "easy" },
+  { id: 6, text: "What comes next: 10, 20, 30, 40, ?", options: ["45", "50", "55"], correctIndex: 1, category: "Multiples of 10", timeLimit: 15, difficulty: "easy" },
+  { id: 7, text: "What is missing: 4, 8, ?, 16, 20", options: ["10", "12", "14"], correctIndex: 1, category: "Arithmetic Sequence", timeLimit: 15, difficulty: "easy" },
+
+  // Medium (8-14): 20 seconds each — geometric, squared, factorial patterns
+  { id: 8, text: "What comes next: 2, 6, 18, 54, ?", options: ["108", "162", "216"], correctIndex: 1, category: "Geometric Sequence", timeLimit: 20, difficulty: "medium" },
+  { id: 9, text: "What comes next: 1, 4, 9, 16, ?", options: ["20", "25", "30"], correctIndex: 1, category: "Perfect Squares", timeLimit: 20, difficulty: "medium" },
+  { id: 10, text: "What comes next: 1, 1, 2, 3, 5, 8, ?", options: ["11", "13", "15"], correctIndex: 1, category: "Fibonacci", timeLimit: 20, difficulty: "medium" },
+  { id: 11, text: "What comes next: 3, 9, 27, 81, ?", options: ["162", "243", "324"], correctIndex: 1, category: "Powers of 3", timeLimit: 20, difficulty: "medium" },
+  { id: 12, text: "What comes next: 1, 8, 27, 64, ?", options: ["100", "125", "150"], correctIndex: 1, category: "Perfect Cubes", timeLimit: 20, difficulty: "medium" },
+  { id: 13, text: "What comes next: 2, 3, 5, 7, 11, ?", options: ["12", "13", "15"], correctIndex: 1, category: "Prime Numbers", timeLimit: 20, difficulty: "medium" },
+  { id: 14, text: "What comes next: 100, 81, 64, 49, ?", options: ["25", "36", "42"], correctIndex: 1, category: "Reverse Squares", timeLimit: 20, difficulty: "medium" },
+
+  // Hard (15-20): 30 seconds each — complex and interleaved patterns
+  { id: 15, text: "What comes next: 1, 2, 4, 7, 11, 16, ?", options: ["20", "22", "24"], correctIndex: 1, category: "Triangular Differences", timeLimit: 30, difficulty: "hard" },
+  { id: 16, text: "What comes next: 2, 5, 10, 17, 26, ?", options: ["33", "35", "37"], correctIndex: 2, category: "n-squared+1", timeLimit: 30, difficulty: "hard" },
+  { id: 17, text: "What is missing: 1, 4, ?, 16, 25, 36", options: ["6", "8", "9"], correctIndex: 2, category: "Squares", timeLimit: 30, difficulty: "hard" },
+  { id: 18, text: "What comes next: 0, 1, 1, 2, 3, 5, 8, 13, ?", options: ["18", "20", "21"], correctIndex: 2, category: "Fibonacci Extended", timeLimit: 30, difficulty: "hard" },
+  { id: 19, text: "What comes next: 1, 3, 7, 15, 31, ?", options: ["47", "55", "63"], correctIndex: 2, category: "2^n - 1", timeLimit: 30, difficulty: "hard" },
+  { id: 20, text: "What comes next: 2, 6, 12, 20, 30, ?", options: ["40", "42", "44"], correctIndex: 1, category: "n(n+1)", timeLimit: 30, difficulty: "hard" },
 ]
 
-// Activity 3: Memory Retention
+// ─── Activity 3: Memory Retention (unchanged for now) ───
 export const memoryQuestions: Question[] = [
-  { id: 1, text: "Remember this list: Apple, Book, Cat, Door, Eagle. What was the 3rd item?", options: ["Book", "Door", "Cat", "Eagle"], correctIndex: 2, category: "Serial Recall" },
-  { id: 2, text: "A sequence was shown: 7, 3, 9, 1, 5. What was the 4th number?", options: ["3", "9", "1", "5"], correctIndex: 2, category: "Digit Span" },
-  { id: 3, text: "Which color was NOT in the list: Red, Blue, Green, Yellow?", options: ["Red", "Orange", "Blue", "Green"], correctIndex: 1, category: "Recognition" },
-  { id: 4, text: "Recall: The capital of Australia is:", options: ["Sydney", "Melbourne", "Canberra", "Brisbane"], correctIndex: 2, category: "Fact Recall" },
-  { id: 5, text: "In the sequence Sun, Moon, Star, Cloud, Rain — what comes after Star?", options: ["Moon", "Cloud", "Rain", "Sun"], correctIndex: 1, category: "Sequential Memory" },
-  { id: 6, text: "What is the reverse of the word 'MEMORY'?", options: ["YROMEM", "MROMEY", "YMEROM", "YRMOEM"], correctIndex: 0, category: "Working Memory" },
-  { id: 7, text: "How many letters in the word 'NEUROSCIENCE'?", options: ["11", "12", "13", "10"], correctIndex: 1, category: "Processing" },
-  { id: 8, text: "If today is Wednesday, what day was it 3 days ago?", options: ["Monday", "Sunday", "Saturday", "Tuesday"], correctIndex: 1, category: "Temporal Recall" },
-  { id: 9, text: "The periodic table symbol for Gold is:", options: ["Go", "Gd", "Au", "Ag"], correctIndex: 2, category: "Fact Recall" },
-  { id: 10, text: "Remember: 42, 17, 83, 56, 29. What was the largest number?", options: ["56", "83", "42", "29"], correctIndex: 1, category: "Magnitude Recall" },
+  { id: 1, text: "Remember this list: Apple, Book, Cat, Door, Eagle. What was the 3rd item?", options: ["Book", "Cat", "Door"], correctIndex: 1, category: "Serial Recall", timeLimit: 15, difficulty: "easy" },
+  { id: 2, text: "A sequence was shown: 7, 3, 9, 1, 5. What was the 4th number?", options: ["3", "1", "5"], correctIndex: 1, category: "Digit Span", timeLimit: 15, difficulty: "easy" },
+  { id: 3, text: "Which color was NOT in the list: Red, Blue, Green, Yellow?", options: ["Red", "Orange", "Blue"], correctIndex: 1, category: "Recognition", timeLimit: 15, difficulty: "easy" },
+  { id: 4, text: "Recall: The capital of Australia is:", options: ["Sydney", "Canberra", "Melbourne"], correctIndex: 1, category: "Fact Recall", timeLimit: 15, difficulty: "easy" },
+  { id: 5, text: "In the sequence Sun, Moon, Star, Cloud, Rain — what comes after Star?", options: ["Moon", "Cloud", "Rain"], correctIndex: 1, category: "Sequential Memory", timeLimit: 20, difficulty: "medium" },
+  { id: 6, text: "What is the reverse of the word 'MEMORY'?", options: ["YROMEM", "MROMEY", "YMEROM"], correctIndex: 0, category: "Working Memory", timeLimit: 20, difficulty: "medium" },
+  { id: 7, text: "How many letters in the word 'NEUROSCIENCE'?", options: ["11", "12", "13"], correctIndex: 1, category: "Processing", timeLimit: 20, difficulty: "medium" },
+  { id: 8, text: "If today is Wednesday, what day was it 3 days ago?", options: ["Monday", "Sunday", "Saturday"], correctIndex: 1, category: "Temporal Recall", timeLimit: 20, difficulty: "medium" },
+  { id: 9, text: "The periodic table symbol for Gold is:", options: ["Go", "Au", "Ag"], correctIndex: 1, category: "Fact Recall", timeLimit: 20, difficulty: "medium" },
+  { id: 10, text: "Remember: 42, 17, 83, 56, 29. What was the largest number?", options: ["56", "83", "42"], correctIndex: 1, category: "Magnitude Recall", timeLimit: 20, difficulty: "medium" },
 ]
 
-// Activity 4: Reading Comprehension
+// ─── Activity 4: Reading Comprehension (unchanged for now) ───
 export const comprehensionQuestions: Question[] = [
-  { id: 1, text: "Passage: 'The EEG captures electrical signals from the scalp using electrodes.' — What does EEG capture?", options: ["Magnetic fields", "Electrical signals", "Sound waves", "Light"], correctIndex: 1, category: "Fact Extraction" },
-  { id: 2, text: "Passage: 'Alpha waves (8-13 Hz) are dominant when eyes are closed.' — When are alpha waves dominant?", options: ["During sleep", "Eyes open", "Eyes closed", "During exercise"], correctIndex: 2, category: "Comprehension" },
-  { id: 3, text: "Passage: 'The EMOTIV EPOC X has 14 channels and uses wireless transmission.' — How many channels?", options: ["10", "12", "14", "16"], correctIndex: 2, category: "Detail Recall" },
-  { id: 4, text: "Passage: 'Beta waves indicate active thinking and focus.' — What do beta waves indicate?", options: ["Sleep", "Relaxation", "Active thinking", "Meditation"], correctIndex: 2, category: "Inference" },
-  { id: 5, text: "Passage: 'Preprocessing removes noise from raw EEG signals.' — What is removed during preprocessing?", options: ["Data", "Electrodes", "Noise", "Channels"], correctIndex: 2, category: "Fact Extraction" },
-  { id: 6, text: "If a study finds 'higher theta/alpha ratio correlates with fatigue', a fatigued person would have:", options: ["Low theta", "High alpha", "High theta/alpha ratio", "Equal theta and alpha"], correctIndex: 2, category: "Analytical Reading" },
-  { id: 7, text: "Passage: 'The 10-20 system ensures cross-study comparability.' — Why use the 10-20 system?", options: ["It's cheaper", "Cross-study comparability", "It uses fewer electrodes", "It's wireless"], correctIndex: 1, category: "Purpose Identification" },
-  { id: 8, text: "Passage: 'Motor imagery involves imagining movement without physical action.' — Motor imagery requires:", options: ["Physical movement", "No movement", "Verbal response", "Eye tracking"], correctIndex: 1, category: "Comprehension" },
-  { id: 9, text: "A research abstract states: 'N=50, p<0.01'. This means the result is:", options: ["Not significant", "Statistically significant", "Inconclusive", "Random"], correctIndex: 1, category: "Research Literacy" },
-  { id: 10, text: "Passage: 'Frontal electrodes (F3, F4) are used for working memory tasks.' — Which electrodes for working memory?", options: ["O1, O2", "T7, T8", "F3, F4", "P7, P8"], correctIndex: 2, category: "Detail Matching" },
+  { id: 1, text: "Passage: 'The EEG captures electrical signals from the scalp using electrodes.' — What does EEG capture?", options: ["Magnetic fields", "Electrical signals", "Sound waves"], correctIndex: 1, category: "Fact Extraction", timeLimit: 20, difficulty: "easy" },
+  { id: 2, text: "Passage: 'Alpha waves (8-13 Hz) are dominant when eyes are closed.' — When are alpha waves dominant?", options: ["During sleep", "Eyes closed", "During exercise"], correctIndex: 1, category: "Comprehension", timeLimit: 20, difficulty: "easy" },
+  { id: 3, text: "Passage: 'The EMOTIV EPOC X has 14 channels and uses wireless transmission.' — How many channels?", options: ["10", "14", "16"], correctIndex: 1, category: "Detail Recall", timeLimit: 20, difficulty: "easy" },
+  { id: 4, text: "Passage: 'Beta waves indicate active thinking and focus.' — What do beta waves indicate?", options: ["Sleep", "Active thinking", "Meditation"], correctIndex: 1, category: "Inference", timeLimit: 20, difficulty: "medium" },
+  { id: 5, text: "Passage: 'Preprocessing removes noise from raw EEG signals.' — What is removed during preprocessing?", options: ["Data", "Noise", "Channels"], correctIndex: 1, category: "Fact Extraction", timeLimit: 20, difficulty: "medium" },
+  { id: 6, text: "If a study finds 'higher theta/alpha ratio correlates with fatigue', a fatigued person would have:", options: ["Low theta", "High theta/alpha ratio", "Equal theta and alpha"], correctIndex: 1, category: "Analytical Reading", timeLimit: 30, difficulty: "hard" },
+  { id: 7, text: "Passage: 'The 10-20 system ensures cross-study comparability.' — Why use the 10-20 system?", options: ["It's cheaper", "Cross-study comparability", "It uses fewer electrodes"], correctIndex: 1, category: "Purpose Identification", timeLimit: 20, difficulty: "medium" },
+  { id: 8, text: "Passage: 'Motor imagery involves imagining movement without physical action.' — Motor imagery requires:", options: ["Physical movement", "No movement", "Verbal response"], correctIndex: 1, category: "Comprehension", timeLimit: 20, difficulty: "medium" },
+  { id: 9, text: "A research abstract states: 'N=50, p<0.01'. This means the result is:", options: ["Not significant", "Statistically significant", "Inconclusive"], correctIndex: 1, category: "Research Literacy", timeLimit: 30, difficulty: "hard" },
+  { id: 10, text: "Passage: 'Frontal electrodes (F3, F4) are used for working memory tasks.' — Which electrodes for working memory?", options: ["O1, O2", "F3, F4", "P7, P8"], correctIndex: 1, category: "Detail Matching", timeLimit: 20, difficulty: "medium" },
 ]
 
-// Activity 5: Sustained Attention
+// ─── Activity 5: Sustained Attention (unchanged for now) ───
 export const attentionQuestions: Question[] = [
-  { id: 1, text: "Count the number of times 'A' appears: A B C A D A E F A G", options: ["3", "4", "5", "2"], correctIndex: 1, category: "Target Counting" },
-  { id: 2, text: "Which number appears twice: 5, 8, 3, 7, 8, 2, 9, 1?", options: ["5", "3", "8", "7"], correctIndex: 2, category: "Duplicate Detection" },
-  { id: 3, text: "In the sequence: X O X X O X O X X X — how many X's?", options: ["5", "6", "7", "8"], correctIndex: 2, category: "Sustained Counting" },
-  { id: 4, text: "Which word is different: run, jog, sprint, read, dash?", options: ["run", "jog", "read", "sprint"], correctIndex: 2, category: "Oddball Detection" },
-  { id: 5, text: "How many even numbers: 13, 24, 37, 48, 51, 62, 79, 80?", options: ["3", "4", "5", "2"], correctIndex: 1, category: "Selective Attention" },
-  { id: 6, text: "What letter comes after the 2nd vowel in: B E A U T I F U L?", options: ["T", "U", "I", "B"], correctIndex: 0, category: "Sequential Focus" },
-  { id: 7, text: "Count backwards: 50, 45, 40, 35, ? — what comes next?", options: ["25", "30", "20", "15"], correctIndex: 1, category: "Working Attention" },
-  { id: 8, text: "In 'MISSISSIPPI', how many S's are there?", options: ["3", "4", "5", "2"], correctIndex: 1, category: "Letter Counting" },
-  { id: 9, text: "Which is the only prime number: 15, 21, 23, 27?", options: ["15", "21", "23", "27"], correctIndex: 2, category: "Analytical Focus" },
-  { id: 10, text: "Track the target: if X moves right 3, up 2, left 1 — net horizontal movement is:", options: ["1 right", "2 right", "3 right", "0"], correctIndex: 1, category: "Spatial Tracking" },
+  { id: 1, text: "Count the number of times 'A' appears: A B C A D A E F A G", options: ["3", "4", "5"], correctIndex: 1, category: "Target Counting", timeLimit: 15, difficulty: "easy" },
+  { id: 2, text: "Which number appears twice: 5, 8, 3, 7, 8, 2, 9, 1?", options: ["5", "8", "7"], correctIndex: 1, category: "Duplicate Detection", timeLimit: 15, difficulty: "easy" },
+  { id: 3, text: "In the sequence: X O X X O X O X X X — how many X's?", options: ["5", "7", "8"], correctIndex: 1, category: "Sustained Counting", timeLimit: 20, difficulty: "medium" },
+  { id: 4, text: "Which word is different: run, jog, sprint, read, dash?", options: ["jog", "read", "sprint"], correctIndex: 1, category: "Oddball Detection", timeLimit: 15, difficulty: "easy" },
+  { id: 5, text: "How many even numbers: 13, 24, 37, 48, 51, 62, 79, 80?", options: ["3", "4", "5"], correctIndex: 1, category: "Selective Attention", timeLimit: 20, difficulty: "medium" },
+  { id: 6, text: "What letter comes after the 2nd vowel in: B E A U T I F U L?", options: ["T", "U", "I"], correctIndex: 1, category: "Sequential Focus", timeLimit: 20, difficulty: "medium" },
+  { id: 7, text: "Count backwards: 50, 45, 40, 35, ? — what comes next?", options: ["25", "30", "20"], correctIndex: 1, category: "Working Attention", timeLimit: 15, difficulty: "easy" },
+  { id: 8, text: "In 'MISSISSIPPI', how many S's are there?", options: ["3", "4", "5"], correctIndex: 1, category: "Letter Counting", timeLimit: 20, difficulty: "medium" },
+  { id: 9, text: "Which is the only prime number: 15, 21, 23, 27?", options: ["15", "23", "27"], correctIndex: 1, category: "Analytical Focus", timeLimit: 20, difficulty: "medium" },
+  { id: 10, text: "Track the target: if X moves right 3, up 2, left 1 — net horizontal movement is:", options: ["1 right", "2 right", "3 right"], correctIndex: 1, category: "Spatial Tracking", timeLimit: 30, difficulty: "hard" },
 ]
 
 export function getQuestionsForActivity(activityId: string): Question[] {

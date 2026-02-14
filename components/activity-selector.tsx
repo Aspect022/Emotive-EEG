@@ -43,9 +43,9 @@ const activities: {
     id: "pattern",
     title: "Pattern Matching",
     description:
-      "Visual and logical pattern recognition with shape matching and abstract symbol sequences.",
+      "Number pattern recognition with arithmetic, geometric, and complex sequences of increasing difficulty.",
     icon: <Shapes className="h-5 w-5" />,
-    questions: 10,
+    questions: 20,
   },
   {
     id: "memory",
