@@ -1,18 +1,39 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Clock } from "lucide-react"
+import { useState, useCallback, useRef } from "react"
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  XCircle,
+  Clock,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getQuestionsForActivity, getActivityTitle } from "@/lib/questions"
 import type { ActivityType } from "@/components/activity-selector"
 
+interface AnswerRecord {
+  questionId: number
+  selected: number
+  correct: number
+}
+
 interface ActivityRunnerProps {
   activityId: ActivityType
-  onComplete: (activityId: ActivityType, score: number, total: number) => void
+  onComplete: (
+    activityId: ActivityType,
+    score: number,
+    total: number,
+    answers?: AnswerRecord[]
+  ) => void
   onBack: () => void
 }
 
-export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunnerProps) {
+export function ActivityRunner({
+  activityId,
+  onComplete,
+  onBack,
+}: ActivityRunnerProps) {
   const questions = getQuestionsForActivity(activityId)
   const title = getActivityTitle(activityId)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -20,20 +41,27 @@ export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunne
   const [isAnswered, setIsAnswered] = useState(false)
   const [score, setScore] = useState(0)
   const [showResults, setShowResults] = useState(false)
+  const answersRef = useRef<AnswerRecord[]>([])
 
   const question = questions[currentIndex]
-  const progress = ((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100
+  const progress =
+    ((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100
 
   const handleSelect = useCallback(
     (index: number) => {
       if (isAnswered) return
       setSelectedAnswer(index)
       setIsAnswered(true)
+      answersRef.current.push({
+        questionId: question.id,
+        selected: index,
+        correct: question.correctIndex,
+      })
       if (index === question.correctIndex) {
         setScore((prev) => prev + 1)
       }
     },
-    [isAnswered, question.correctIndex]
+    [isAnswered, question.correctIndex, question.id]
   )
 
   const handleNext = useCallback(() => {
@@ -47,28 +75,41 @@ export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunne
   }, [currentIndex, questions.length])
 
   if (showResults) {
+    const pct = Math.round((score / questions.length) * 100)
     return (
       <div className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 text-center">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-10 text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <CheckCircle2 className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-foreground">{title} Complete</h2>
-          <p className="mb-6 text-muted-foreground">
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
+            {title} Complete
+          </h2>
+          <p className="mb-1 text-muted-foreground">
             You scored{" "}
             <span className="font-mono font-bold text-primary">
               {score}/{questions.length}
             </span>
           </p>
+          <p className="mb-6 font-mono text-sm text-muted-foreground">
+            {pct}% accuracy
+          </p>
           <div className="mb-8 h-2 w-full overflow-hidden rounded-full bg-secondary">
             <div
               className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${(score / questions.length) * 100}%` }}
+              style={{ width: `${pct}%` }}
             />
           </div>
           <Button
-            onClick={() => onComplete(activityId, score, questions.length)}
-            className="gap-2 bg-primary px-8 text-primary-foreground hover:bg-primary/90"
+            onClick={() =>
+              onComplete(
+                activityId,
+                score,
+                questions.length,
+                answersRef.current
+              )
+            }
+            className="h-12 gap-2 rounded-xl bg-primary px-8 text-primary-foreground hover:bg-primary/90"
           >
             Return to Activities
             <ArrowRight className="h-4 w-4" />
@@ -110,7 +151,9 @@ export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunne
         {/* Activity Title */}
         <div className="mb-2 flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-          <span className="font-mono text-xs uppercase tracking-widest text-primary">{title}</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-primary">
+            {title}
+          </span>
         </div>
 
         {/* Category */}
@@ -120,7 +163,9 @@ export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunne
 
         {/* Question */}
         <div className="mb-8 rounded-xl border border-border bg-card p-6">
-          <h3 className="text-lg font-semibold leading-relaxed text-foreground">{question.text}</h3>
+          <h3 className="text-lg font-semibold leading-relaxed text-foreground">
+            {question.text}
+          </h3>
         </div>
 
         {/* Options */}
@@ -128,13 +173,16 @@ export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunne
           {question.options.map((option, index) => {
             let borderClass = "border-border hover:border-primary/50"
             let bgClass = "bg-card"
-            let textClass = "text-foreground"
+            const textClass = "text-foreground"
 
             if (isAnswered) {
               if (index === question.correctIndex) {
                 borderClass = "border-green-500/50"
                 bgClass = "bg-green-500/10"
-              } else if (index === selectedAnswer && index !== question.correctIndex) {
+              } else if (
+                index === selectedAnswer &&
+                index !== question.correctIndex
+              ) {
                 borderClass = "border-red-500/50"
                 bgClass = "bg-red-500/10"
               } else {
@@ -154,13 +202,17 @@ export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunne
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary font-mono text-sm font-medium text-muted-foreground">
                   {String.fromCharCode(65 + index)}
                 </span>
-                <span className={`text-sm font-medium ${textClass}`}>{option}</span>
+                <span className={`text-sm font-medium ${textClass}`}>
+                  {option}
+                </span>
                 {isAnswered && index === question.correctIndex && (
                   <CheckCircle2 className="ml-auto h-5 w-5 shrink-0 text-green-500" />
                 )}
-                {isAnswered && index === selectedAnswer && index !== question.correctIndex && (
-                  <XCircle className="ml-auto h-5 w-5 shrink-0 text-red-500" />
-                )}
+                {isAnswered &&
+                  index === selectedAnswer &&
+                  index !== question.correctIndex && (
+                    <XCircle className="ml-auto h-5 w-5 shrink-0 text-red-500" />
+                  )}
               </button>
             )
           })}
@@ -171,9 +223,11 @@ export function ActivityRunner({ activityId, onComplete, onBack }: ActivityRunne
           <div className="mt-6 flex justify-end">
             <Button
               onClick={handleNext}
-              className="gap-2 bg-primary px-6 text-primary-foreground hover:bg-primary/90"
+              className="h-11 gap-2 rounded-xl bg-primary px-6 text-primary-foreground hover:bg-primary/90"
             >
-              {currentIndex < questions.length - 1 ? "Next Question" : "See Results"}
+              {currentIndex < questions.length - 1
+                ? "Next Question"
+                : "See Results"}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>

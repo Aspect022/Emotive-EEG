@@ -3,17 +3,27 @@
 import { useState, useCallback } from "react"
 import { Navbar } from "@/components/navbar"
 import { LandingPage } from "@/components/landing-page"
-import { RegistrationForm, type ParticipantData } from "@/components/registration-form"
-import { ActivitySelector, type ActivityType } from "@/components/activity-selector"
+import {
+  RegistrationForm,
+  type ParticipantData,
+} from "@/components/registration-form"
+import {
+  ActivitySelector,
+  type ActivityType,
+} from "@/components/activity-selector"
 import { ActivityRunner } from "@/components/activity-runner"
 
 type AppStep = "landing" | "register" | "select-activity" | "run-activity"
 
 export default function Page() {
   const [step, setStep] = useState<AppStep>("landing")
-  const [, setParticipant] = useState<ParticipantData | null>(null)
-  const [completedActivities, setCompletedActivities] = useState<ActivityType[]>([])
-  const [currentActivity, setCurrentActivity] = useState<ActivityType | null>(null)
+  const [participant, setParticipant] = useState<ParticipantData | null>(null)
+  const [completedActivities, setCompletedActivities] = useState<
+    ActivityType[]
+  >([])
+  const [currentActivity, setCurrentActivity] = useState<ActivityType | null>(
+    null
+  )
 
   const currentNav =
     step === "landing"
@@ -39,14 +49,39 @@ export default function Page() {
   }, [])
 
   const handleActivityComplete = useCallback(
-    (activityId: ActivityType) => {
+    async (
+      activityId: ActivityType,
+      score: number,
+      total: number,
+      answers?: { questionId: number; selected: number; correct: number }[]
+    ) => {
+      // Save results to Supabase
+      if (participant) {
+        try {
+          await fetch("/api/results", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              participant_id: participant.id,
+              activity_type: activityId,
+              score,
+              total_questions: total,
+              answers: answers || null,
+              started_at: new Date().toISOString(),
+            }),
+          })
+        } catch (err) {
+          console.error("Failed to save results:", err)
+        }
+      }
+
       if (!completedActivities.includes(activityId)) {
         setCompletedActivities((prev) => [...prev, activityId])
       }
       setCurrentActivity(null)
       setStep("select-activity")
     },
-    [completedActivities]
+    [completedActivities, participant]
   )
 
   return (
