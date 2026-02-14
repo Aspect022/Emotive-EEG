@@ -51,9 +51,9 @@ const activities: {
     id: "memory",
     title: "Memory Retention",
     description:
-      "Learning, encoding, and recall tasks testing short-term and working memory capacity.",
+      "Stimulus cards appear briefly then disappear. Recall what you saw to answer. Tests short-term and working memory.",
     icon: <BookOpen className="h-5 w-5" />,
-    questions: 10,
+    questions: 20,
   },
   {
     id: "comprehension",
@@ -67,9 +67,9 @@ const activities: {
     id: "attention",
     title: "Sustained Attention",
     description:
-      "Focus and vigilance tasks measuring selective attention over extended stimuli streams.",
+      "Stimulus cards flash briefly. Spot the oddball, count targets, and detect pattern breaks under time pressure.",
     icon: <Focus className="h-5 w-5" />,
-    questions: 10,
+    questions: 20,
   },
 ]
 

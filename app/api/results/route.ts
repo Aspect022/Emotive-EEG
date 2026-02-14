@@ -11,6 +11,7 @@ export async function POST(request: Request) {
       total_questions,
       answers,
       started_at,
+      time_taken_seconds,
     } = body
 
     if (!participant_id || !activity_type || score == null || !total_questions) {
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
         total_questions,
         answers: answers || null,
         started_at: started_at || null,
+        time_taken_seconds: time_taken_seconds || 0,
       })
       .select("id")
       .single()

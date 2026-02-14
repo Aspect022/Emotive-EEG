@@ -65,3 +65,50 @@ export async function POST(request: Request) {
     )
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json()
+    const { participant_id, add_session_seconds } = body
+
+    if (!participant_id || !add_session_seconds) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      )
+    }
+
+    const supabase = await createClient()
+
+    // Get current total
+    const { data: current } = await supabase
+      .from("participants")
+      .select("total_session_seconds")
+      .eq("id", participant_id)
+      .single()
+
+    const currentTotal = current?.total_session_seconds || 0
+
+    const { error } = await supabase
+      .from("participants")
+      .update({
+        total_session_seconds: currentTotal + add_session_seconds,
+      })
+      .eq("id", participant_id)
+
+    if (error) {
+      console.error("Supabase update error:", error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      total_session_seconds: currentTotal + add_session_seconds,
+    })
+  } catch (err) {
+    console.error("API error:", err)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}

@@ -62,7 +62,8 @@ export default function Page() {
         timedOut: boolean
         difficulty: string
         category: string
-      }[]
+      }[],
+      activityDurationSeconds?: number
     ) => {
       // Save results to Supabase
       if (participant) {
@@ -77,8 +78,21 @@ export default function Page() {
               total_questions: total,
               answers: answers || null,
               started_at: new Date().toISOString(),
+              time_taken_seconds: activityDurationSeconds || 0,
             }),
           })
+
+          // Also update the participant's total session time
+          if (activityDurationSeconds) {
+            await fetch("/api/participants", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                participant_id: participant.id,
+                add_session_seconds: activityDurationSeconds,
+              }),
+            })
+          }
         } catch (err) {
           console.error("Failed to save results:", err)
         }
