@@ -11,12 +11,15 @@ import {
   Keyboard,
   Eye,
   Timer,
+  BookOpen,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   getQuestionsForActivity,
   getActivityTitle,
   isStimulusActivity,
+  isComprehensionActivity,
+  passages,
 } from "@/lib/questions"
 import type { Question } from "@/lib/questions"
 import type { ActivityType } from "@/components/activity-selector"
@@ -44,14 +47,19 @@ interface ActivityRunnerProps {
   onBack: () => void
 }
 
-// Format seconds to mm:ss
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
 }
 
-type Phase = "pre-start" | "stimulus" | "answering" | "answered" | "results"
+type Phase =
+  | "pre-start"
+  | "reading-passage" // reading comprehension: show passage
+  | "stimulus" // memory/attention: show card
+  | "answering"
+  | "answered"
+  | "results"
 
 export function ActivityRunner({
   activityId,
@@ -61,18 +69,21 @@ export function ActivityRunner({
   const questions = getQuestionsForActivity(activityId)
   const title = getActivityTitle(activityId)
   const hasStimulus = isStimulusActivity(activityId)
+  const isComprehension = isComprehensionActivity(activityId)
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
   const [score, setScore] = useState(0)
   const [phase, setPhase] = useState<Phase>("pre-start")
 
+  // Track which passage is currently being shown/read
+  const [currentPassageIndex, setCurrentPassageIndex] = useState(0)
+
   // Timer state: -1 = not started yet (sentinel to prevent premature timeout)
   const [answerTimeLeft, setAnswerTimeLeft] = useState(-1)
-  // Stimulus countdown
   const [stimulusTimeLeft, setStimulusTimeLeft] = useState(0)
 
-  // Session timer: total seconds spent in this activity (only ticks when actively testing)
+  // Session timer
   const [sessionSeconds, setSessionSeconds] = useState(0)
 
   const answersRef = useRef<AnswerRecord[]>([])
@@ -87,9 +98,12 @@ export function ActivityRunner({
       questions.length) *
     100
 
-  // ── Session timer: ticks every second ONLY during stimulus/answering phases ──
+  // ── Session timer: ticks only during active phases ──
   useEffect(() => {
-    const isActive = phase === "stimulus" || phase === "answering"
+    const isActive =
+      phase === "stimulus" ||
+      phase === "answering" ||
+      phase === "reading-passage"
     if (isActive) {
       sessionTimerRef.current = setInterval(() => {
         setSessionSeconds((prev) => prev + 1)
@@ -110,7 +124,6 @@ export function ActivityRunner({
       setStimulusTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(stimulusTimerRef.current!)
-          // Move to answering phase
           setPhase("answering")
           return 0
         }
@@ -127,7 +140,6 @@ export function ActivityRunner({
   useEffect(() => {
     if (phase !== "answering" || !question) return
 
-    // Set the answer time and record the start
     setAnswerTimeLeft(question.timeLimit)
     answerStartRef.current = Date.now()
 
@@ -144,9 +156,9 @@ export function ActivityRunner({
     return () => {
       if (answerTimerRef.current) clearInterval(answerTimerRef.current)
     }
-  }, [phase, currentIndex, question?.timeLimit]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase, currentIndex, question])
 
-  // ── Handle answer timeout: answerTimeLeft hits 0 while in answering phase ──
+  // ── Handle answer timeout ──
   useEffect(() => {
     if (answerTimeLeft !== 0 || phase !== "answering" || !question) return
 
@@ -166,10 +178,23 @@ export function ActivityRunner({
 
   // ── Keyboard listener ──
   useEffect(() => {
-    if (phase === "pre-start" || phase === "results" || phase === "stimulus")
-      return
-
     const handleKeyDown = (e: KeyboardEvent) => {
+      // In reading passage phase, Enter moves to questions
+      if (phase === "reading-passage") {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          setPhase("answering")
+        }
+        return
+      }
+
+      if (
+        phase === "pre-start" ||
+        phase === "results" ||
+        phase === "stimulus"
+      )
+        return
+
       if (phase === "answered") {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault()
@@ -221,28 +246,40 @@ export function ActivityRunner({
 
   const handleNext = useCallback(() => {
     if (currentIndex < questions.length - 1) {
-      setCurrentIndex((prev) => prev + 1)
+      const nextIndex = currentIndex + 1
+      const nextQ = questions[nextIndex]
+      setCurrentIndex(nextIndex)
       setSelectedAnswer(null)
       setAnswerTimeLeft(-1)
-      // Decide next phase
-      const nextQ = questions[currentIndex + 1]
+
       if (hasStimulus && nextQ?.stimulus) {
         setPhase("stimulus")
+      } else if (
+        isComprehension &&
+        nextQ?.passageIndex !== undefined &&
+        nextQ.passageIndex !== currentPassageIndex
+      ) {
+        // New passage - show reading screen
+        setCurrentPassageIndex(nextQ.passageIndex)
+        setPhase("reading-passage")
       } else {
         setPhase("answering")
       }
     } else {
       setPhase("results")
     }
-  }, [currentIndex, questions, hasStimulus])
+  }, [currentIndex, questions, hasStimulus, isComprehension, currentPassageIndex])
 
   const handleBeginTest = useCallback(() => {
     if (hasStimulus && question?.stimulus) {
       setPhase("stimulus")
+    } else if (isComprehension) {
+      setCurrentPassageIndex(question?.passageIndex ?? 0)
+      setPhase("reading-passage")
     } else {
       setPhase("answering")
     }
-  }, [hasStimulus, question])
+  }, [hasStimulus, isComprehension, question])
 
   // ═══════════════════════════════════════════════════════════════
   //  PRE-START SCREEN
@@ -256,8 +293,11 @@ export function ActivityRunner({
           </div>
           <h2 className="mb-3 text-2xl font-bold text-foreground">{title}</h2>
           <p className="mb-6 leading-relaxed text-muted-foreground">
-            {questions.length} questions with increasing difficulty. Each question
-            is timed. Use your{" "}
+            {questions.length} questions
+            {isComprehension
+              ? ". Read each passage carefully, then answer questions about it."
+              : " with increasing difficulty. Each question is timed."}
+            {" "}Use your{" "}
             <strong className="text-foreground">keyboard numpad</strong> to
             answer:
           </p>
@@ -279,12 +319,22 @@ export function ActivityRunner({
           </div>
 
           <div className="mb-8 flex flex-col gap-2 rounded-xl bg-secondary/50 p-4 text-left text-sm text-muted-foreground">
-            <div className="flex items-start gap-2">
-              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span>
-                Easy: 15s | Medium: 20s | Hard: 30s per question
-              </span>
-            </div>
+            {isComprehension && (
+              <div className="flex items-start gap-2">
+                <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>
+                  2 passages with 5 questions each. Read the passage, press Enter to start questions.
+                </span>
+              </div>
+            )}
+            {!isComprehension && (
+              <div className="flex items-start gap-2">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>
+                  Easy: {hasStimulus ? "8-10s" : "15s"} | Medium: {hasStimulus ? "10-12s" : "20s"} | Hard: {hasStimulus ? "12-15s" : "30s"} per question
+                </span>
+              </div>
+            )}
             {hasStimulus && (
               <div className="flex items-start gap-2">
                 <Eye className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -301,8 +351,8 @@ export function ActivityRunner({
               <Keyboard className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <span>
                 Press{" "}
-                <strong className="text-foreground">Enter</strong> to
-                advance after each question
+                <strong className="text-foreground">Enter</strong> to advance
+                after each question
               </span>
             </div>
           </div>
@@ -381,7 +431,7 @@ export function ActivityRunner({
             }
             className="h-12 gap-2 rounded-xl bg-primary px-8 text-primary-foreground hover:bg-primary/90"
           >
-            Return to Activities
+            Continue
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -400,6 +450,75 @@ export function ActivityRunner({
       : timerPct > 25
         ? "bg-yellow-500"
         : "bg-red-500"
+
+  // ═══════════════════════════════════════════════════════════════
+  //  READING PASSAGE PHASE
+  // ═══════════════════════════════════════════════════════════════
+  if (phase === "reading-passage") {
+    const passage = passages[currentPassageIndex]
+    return (
+      <div className="flex flex-1 flex-col px-6 py-8 lg:px-16">
+        <div className="mx-auto w-full max-w-3xl">
+          {/* Session timer top bar */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1.5">
+              <Timer className="h-3.5 w-3.5 text-primary" />
+              <span className="font-mono text-xs font-medium text-foreground">
+                {formatTime(sessionSeconds)}
+              </span>
+            </div>
+            <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 font-mono text-xs text-primary">
+              Passage {currentPassageIndex + 1} of {passages.length}
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-6 h-1 w-full overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          {/* Passage card */}
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">{passage.title}</h3>
+                <p className="text-xs text-muted-foreground">Read carefully, then press Enter to begin questions</p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-8">
+              <p className="text-sm leading-[1.8] text-foreground/90">
+                {passage.text}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-xs text-muted-foreground">
+                Press{" "}
+                <kbd className="rounded border border-border bg-secondary px-1.5 py-0.5 font-mono text-foreground">
+                  Enter
+                </kbd>{" "}
+                when you are ready to answer questions
+              </p>
+              <Button
+                onClick={() => setPhase("answering")}
+                className="h-11 gap-2 rounded-xl bg-primary px-6 text-primary-foreground hover:bg-primary/90"
+              >
+                Start Questions
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ═══════════════════════════════════════════════════════════════
   //  STIMULUS PHASE — show card, then auto-hide

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { LandingPage } from "@/components/landing-page"
 import {
@@ -12,8 +12,22 @@ import {
   type ActivityType,
 } from "@/components/activity-selector"
 import { ActivityRunner } from "@/components/activity-runner"
+import { CompletionScreen } from "@/components/completion-screen"
 
-type AppStep = "landing" | "register" | "select-activity" | "run-activity"
+const ALL_ACTIVITIES: ActivityType[] = [
+  "arithmetic",
+  "pattern",
+  "memory",
+  "comprehension",
+  "attention",
+]
+
+type AppStep =
+  | "landing"
+  | "register"
+  | "select-activity"
+  | "run-activity"
+  | "completed"
 
 export default function Page() {
   const [step, setStep] = useState<AppStep>("landing")
@@ -30,9 +44,19 @@ export default function Page() {
       ? "Home"
       : step === "register"
         ? "Register"
-        : step === "select-activity" || step === "run-activity"
-          ? "Activities"
-          : "Home"
+        : step === "completed"
+          ? "Complete"
+          : "Activities"
+
+  // Auto-redirect to completion screen when all activities are done
+  useEffect(() => {
+    if (
+      completedActivities.length === ALL_ACTIVITIES.length &&
+      step === "select-activity"
+    ) {
+      setStep("completed")
+    }
+  }, [completedActivities, step])
 
   const handleStartRecording = useCallback(() => {
     setStep("register")
@@ -98,11 +122,18 @@ export default function Page() {
         }
       }
 
-      if (!completedActivities.includes(activityId)) {
-        setCompletedActivities((prev) => [...prev, activityId])
-      }
+      const newCompleted = completedActivities.includes(activityId)
+        ? completedActivities
+        : [...completedActivities, activityId]
+      setCompletedActivities(newCompleted)
       setCurrentActivity(null)
-      setStep("select-activity")
+
+      // Check if all done
+      if (newCompleted.length === ALL_ACTIVITIES.length) {
+        setStep("completed")
+      } else {
+        setStep("select-activity")
+      }
     },
     [completedActivities, participant]
   )
@@ -136,6 +167,13 @@ export default function Page() {
             setCurrentActivity(null)
             setStep("select-activity")
           }}
+        />
+      )}
+
+      {step === "completed" && participant && (
+        <CompletionScreen
+          participantName={participant.full_name}
+          totalActivities={ALL_ACTIVITIES.length}
         />
       )}
     </div>

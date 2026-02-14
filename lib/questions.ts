@@ -9,7 +9,21 @@ export interface Question {
   // For memory/attention: stimulus shown before question
   stimulus?: string
   stimulusTime?: number // seconds to show stimulus before hiding
+  // For reading comprehension: which passage set (0 or 1)
+  passageIndex?: number
 }
+
+// ─── Passages for Reading Comprehension ───
+export const passages = [
+  {
+    title: "The Paradox of Sleep",
+    text: `For decades, scientists viewed sleep as a passive state — a nightly shutdown of consciousness with no productive function. That view has been thoroughly dismantled. Research now shows that during sleep, the brain is intensely active, cycling through stages that serve distinct purposes. During slow-wave sleep, the glymphatic system flushes cerebrospinal fluid through brain tissue, clearing metabolic waste products including beta-amyloid, a protein linked to Alzheimer's disease. Meanwhile, the hippocampus replays the day's experiences in compressed form, transferring fragile short-term memories into stable long-term storage in the neocortex — a process called memory consolidation. REM sleep, characterized by rapid eye movements and vivid dreaming, appears to strengthen emotional memories and facilitate creative problem-solving by forming unexpected associations between distant concepts. Sleep deprivation, even for a single night, impairs the prefrontal cortex's ability to regulate attention, judgment, and impulse control — effects comparable to moderate alcohol intoxication. Chronic sleep loss has been linked to obesity, cardiovascular disease, and weakened immune function. Remarkably, the body's internal clock, the suprachiasmatic nucleus, orchestrates these cycles with extraordinary precision, synchronizing them to the 24-hour light-dark cycle through a cascade of hormonal signals led by melatonin.`,
+  },
+  {
+    title: "The Economics of Attention",
+    text: `In 1971, economist Herbert Simon observed that in an information-rich world, the wealth of information creates a poverty of something else: attention. His insight has only grown more relevant. The modern attention economy treats human focus as a scarce commodity to be harvested and sold. Social media platforms employ variable-ratio reinforcement schedules — the same mechanism that makes slot machines addictive — to keep users scrolling. Each notification, like, or comment delivers an unpredictable dopamine hit, training the brain to compulsively check for updates. Studies show the average smartphone user touches their device over 2,600 times per day. The cognitive cost is substantial: research by Gloria Mark at UC Irvine found that after an interruption, it takes an average of 23 minutes and 15 seconds to return to the original task. This "attention residue" means that even brief distractions leave a performance deficit that persists long after the interruption ends. The consequences extend beyond productivity. Sustained attention — the ability to maintain focus on a single task — is a foundational cognitive skill that underpins reading comprehension, mathematical reasoning, and empathetic listening. As our attentional capacities fragment, so too may our capacity for deep thought and meaningful human connection. Some researchers now advocate for "attention literacy" as a core educational competency.`,
+  },
+]
 
 // ─── Activity 1: Mental Arithmetic — 20 questions, increasing difficulty ───
 export const arithmeticQuestions: Question[] = [
@@ -65,7 +79,7 @@ export const patternQuestions: Question[] = [
   { id: 20, text: "What comes next: 2, 6, 12, 20, 30, ?", options: ["40", "42", "44"], correctIndex: 1, category: "n(n+1)", timeLimit: 30, difficulty: "hard" },
 ]
 
-// ─── Activity 3: Memory Retention — 20 questions, stimulus card → hide → answer ───
+// ─── Activity 3: Memory Retention — 20 questions, stimulus card -> hide -> answer ───
 export const memoryQuestions: Question[] = [
   // Easy (1-7): 5s stimulus, 10s answer
   { id: 1, stimulus: "4   7   2", stimulusTime: 5, text: "What was the middle number?", options: ["4", "7", "2"], correctIndex: 1, category: "Digit Recall", timeLimit: 10, difficulty: "easy" },
@@ -92,21 +106,23 @@ export const memoryQuestions: Question[] = [
   { id: 20, stimulus: "5   12   3   19   7   14   8   21   2", stimulusTime: 7, text: "How many numbers were odd?", options: ["4", "5", "6"], correctIndex: 1, category: "Digit Analysis", timeLimit: 15, difficulty: "hard" },
 ]
 
-// ─── Activity 4: Reading Comprehension — 10 questions ───
+// ─── Activity 4: Reading Comprehension — 2 passages, 5 questions each = 10 total ───
 export const comprehensionQuestions: Question[] = [
-  { id: 1, text: "Passage: 'The EEG captures electrical signals from the scalp using electrodes.' — What does EEG capture?", options: ["Magnetic fields", "Electrical signals", "Sound waves"], correctIndex: 1, category: "Fact Extraction", timeLimit: 20, difficulty: "easy" },
-  { id: 2, text: "Passage: 'Alpha waves (8-13 Hz) are dominant when eyes are closed.' — When are alpha waves dominant?", options: ["During sleep", "Eyes closed", "During exercise"], correctIndex: 1, category: "Comprehension", timeLimit: 20, difficulty: "easy" },
-  { id: 3, text: "Passage: 'The EMOTIV EPOC X has 14 channels and uses wireless transmission.' — How many channels?", options: ["10", "14", "16"], correctIndex: 1, category: "Detail Recall", timeLimit: 20, difficulty: "easy" },
-  { id: 4, text: "Passage: 'Beta waves indicate active thinking and focus.' — What do beta waves indicate?", options: ["Sleep", "Active thinking", "Meditation"], correctIndex: 1, category: "Inference", timeLimit: 20, difficulty: "medium" },
-  { id: 5, text: "Passage: 'Preprocessing removes noise from raw EEG signals.' — What is removed during preprocessing?", options: ["Data", "Noise", "Channels"], correctIndex: 1, category: "Fact Extraction", timeLimit: 20, difficulty: "medium" },
-  { id: 6, text: "If a study finds 'higher theta/alpha ratio correlates with fatigue', a fatigued person would have:", options: ["Low theta", "High theta/alpha ratio", "Equal theta and alpha"], correctIndex: 1, category: "Analytical Reading", timeLimit: 30, difficulty: "hard" },
-  { id: 7, text: "Passage: 'The 10-20 system ensures cross-study comparability.' — Why use the 10-20 system?", options: ["It's cheaper", "Cross-study comparability", "Fewer electrodes"], correctIndex: 1, category: "Purpose Identification", timeLimit: 20, difficulty: "medium" },
-  { id: 8, text: "Passage: 'Motor imagery involves imagining movement without physical action.' — Motor imagery requires:", options: ["Physical movement", "No movement", "Verbal response"], correctIndex: 1, category: "Comprehension", timeLimit: 20, difficulty: "medium" },
-  { id: 9, text: "A research abstract states: 'N=50, p<0.01'. This means the result is:", options: ["Not significant", "Statistically significant", "Inconclusive"], correctIndex: 1, category: "Research Literacy", timeLimit: 30, difficulty: "hard" },
-  { id: 10, text: "Passage: 'Frontal electrodes (F3, F4) are used for working memory tasks.' — Which electrodes for working memory?", options: ["O1, O2", "F3, F4", "P7, P8"], correctIndex: 1, category: "Detail Matching", timeLimit: 20, difficulty: "medium" },
+  // Passage 1: The Paradox of Sleep — questions 1-5
+  { id: 1, passageIndex: 0, text: "According to the passage, what does the glymphatic system do during slow-wave sleep?", options: ["Generates dreams", "Flushes metabolic waste from brain tissue", "Transfers memories to the hippocampus"], correctIndex: 1, category: "Fact Extraction", timeLimit: 25, difficulty: "easy" },
+  { id: 2, passageIndex: 0, text: "The passage compares one night of sleep deprivation to which of the following?", options: ["A mild concussion", "Moderate alcohol intoxication", "Chronic fatigue syndrome"], correctIndex: 1, category: "Analogy Identification", timeLimit: 25, difficulty: "medium" },
+  { id: 3, passageIndex: 0, text: "Memory consolidation involves transferring memories from the hippocampus to which structure?", options: ["The suprachiasmatic nucleus", "The prefrontal cortex", "The neocortex"], correctIndex: 2, category: "Detail Recall", timeLimit: 25, difficulty: "medium" },
+  { id: 4, passageIndex: 0, text: "Which sleep stage is associated with creative problem-solving through forming unexpected associations?", options: ["Slow-wave sleep", "REM sleep", "Light sleep (Stage 1)"], correctIndex: 1, category: "Inference", timeLimit: 30, difficulty: "hard" },
+  { id: 5, passageIndex: 0, text: "What role does melatonin play according to the passage?", options: ["It clears beta-amyloid from the brain", "It leads the hormonal cascade that synchronizes sleep cycles", "It strengthens emotional memories during REM"], correctIndex: 1, category: "Purpose Identification", timeLimit: 30, difficulty: "hard" },
+  // Passage 2: The Economics of Attention — questions 6-10
+  { id: 6, passageIndex: 1, text: "Herbert Simon argued that an information-rich world creates a poverty of what?", options: ["Money", "Attention", "Time"], correctIndex: 1, category: "Fact Extraction", timeLimit: 25, difficulty: "easy" },
+  { id: 7, passageIndex: 1, text: "What psychological mechanism do social media platforms use, according to the passage?", options: ["Classical conditioning", "Variable-ratio reinforcement schedules", "Cognitive behavioral therapy"], correctIndex: 1, category: "Concept Identification", timeLimit: 25, difficulty: "medium" },
+  { id: 8, passageIndex: 1, text: "According to Gloria Mark's research, how long does it take to refocus after an interruption?", options: ["About 5 minutes", "About 23 minutes", "About 45 minutes"], correctIndex: 1, category: "Detail Recall", timeLimit: 25, difficulty: "medium" },
+  { id: 9, passageIndex: 1, text: "The passage suggests that fragmenting attention may ultimately harm our capacity for:", options: ["Physical health and exercise", "Deep thought and meaningful connection", "Financial planning and budgeting"], correctIndex: 1, category: "Inference", timeLimit: 30, difficulty: "hard" },
+  { id: 10, passageIndex: 1, text: "What do some researchers advocate for as a core educational competency?", options: ["Digital minimalism", "Attention literacy", "Social media regulation"], correctIndex: 1, category: "Conclusion Extraction", timeLimit: 30, difficulty: "hard" },
 ]
 
-// ─── Activity 5: Sustained Attention — 20 questions, stimulus → answer ───
+// ─── Activity 5: Sustained Attention — 20 questions, stimulus -> answer ───
 export const attentionQuestions: Question[] = [
   // Easy (1-7): 5s stimulus, 8s answer
   { id: 1, stimulus: "3   3   3   7   3   3", stimulusTime: 5, text: "What number was different from the rest?", options: ["3", "7", "1"], correctIndex: 1, category: "Oddball Detection", timeLimit: 8, difficulty: "easy" },
@@ -151,11 +167,14 @@ export function getActivityTitle(activityId: string): string {
     case "memory": return "Memory Retention"
     case "comprehension": return "Reading Comprehension"
     case "attention": return "Sustained Attention"
-    default: return ""
+    default: return "Activity"
   }
 }
 
-/** Returns true if this activity uses stimulus-then-answer flow */
 export function isStimulusActivity(activityId: string): boolean {
   return activityId === "memory" || activityId === "attention"
+}
+
+export function isComprehensionActivity(activityId: string): boolean {
+  return activityId === "comprehension"
 }
