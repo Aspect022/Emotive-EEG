@@ -130,7 +130,7 @@ export function RegistrationForm({ onSubmit, onBack }: RegistrationFormProps) {
                   Cognitive Modules
                 </p>
                 <p className="text-sm font-semibold text-primary-foreground">
-                  5 Activities — 60 Questions
+                  5 Activities — ~45 Questions
                 </p>
               </div>
             </div>

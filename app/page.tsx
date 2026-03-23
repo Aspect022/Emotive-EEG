@@ -13,6 +13,11 @@ import {
 } from "@/components/activity-selector"
 import { ActivityRunner } from "@/components/activity-runner"
 import { CompletionScreen } from "@/components/completion-screen"
+import {
+  MemoryCardsPopup,
+  type MemoryCard,
+} from "@/components/memory-cards-popup"
+import { SecretTest } from "@/components/secret-test"
 
 const ALL_ACTIVITIES: ActivityType[] = [
   "arithmetic",
@@ -25,9 +30,12 @@ const ALL_ACTIVITIES: ActivityType[] = [
 type AppStep =
   | "landing"
   | "register"
+  | "memorize-cards"
   | "select-activity"
   | "run-activity"
   | "completed"
+  | "secret-test"
+  | "final-done"
 
 export default function Page() {
   const [step, setStep] = useState<AppStep>("landing")
@@ -38,15 +46,18 @@ export default function Page() {
   const [currentActivity, setCurrentActivity] = useState<ActivityType | null>(
     null
   )
+  const [shownCards, setShownCards] = useState<MemoryCard[]>([])
 
   const currentNav =
     step === "landing"
       ? "Home"
       : step === "register"
         ? "Register"
-        : step === "completed"
+        : step === "completed" || step === "secret-test" || step === "final-done"
           ? "Complete"
-          : "Activities"
+          : step === "memorize-cards"
+            ? "Register"
+            : "Activities"
 
   // Auto-redirect to completion screen when all activities are done
   useEffect(() => {
@@ -64,6 +75,11 @@ export default function Page() {
 
   const handleRegistration = useCallback((data: ParticipantData) => {
     setParticipant(data)
+    setStep("memorize-cards")
+  }, [])
+
+  const handleCardsDismissed = useCallback((cards: MemoryCard[]) => {
+    setShownCards(cards)
     setStep("select-activity")
   }, [])
 
@@ -138,6 +154,14 @@ export default function Page() {
     [completedActivities, participant]
   )
 
+  const handleStartSecretTest = useCallback(() => {
+    setStep("secret-test")
+  }, [])
+
+  const handleSecretTestComplete = useCallback(() => {
+    setStep("final-done")
+  }, [])
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar currentStep={currentNav} />
@@ -149,6 +173,10 @@ export default function Page() {
           onSubmit={handleRegistration}
           onBack={() => setStep("landing")}
         />
+      )}
+
+      {step === "memorize-cards" && (
+        <MemoryCardsPopup open={true} onDismiss={handleCardsDismissed} />
       )}
 
       {step === "select-activity" && (
@@ -172,8 +200,25 @@ export default function Page() {
 
       {step === "completed" && participant && (
         <CompletionScreen
-          participantName={participant.full_name}
+          participantName={participant.fullName}
           totalActivities={ALL_ACTIVITIES.length}
+          onStartSecretTest={handleStartSecretTest}
+        />
+      )}
+
+      {step === "secret-test" && participant && shownCards.length > 0 && (
+        <SecretTest
+          shownCards={shownCards}
+          participantId={participant.id}
+          onComplete={handleSecretTestComplete}
+        />
+      )}
+
+      {step === "final-done" && participant && (
+        <CompletionScreen
+          participantName={participant.fullName}
+          totalActivities={ALL_ACTIVITIES.length}
+          isFinalDone
         />
       )}
     </div>
